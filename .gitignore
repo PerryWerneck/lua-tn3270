@@ -42,11 +42,16 @@
 *.idb
 *.pdb
 
-# Kernel Module Compile Results
-*.mod*
-*.cmd
-.tmp_versions/
-modules.order
-Module.symvers
-Mkfile.old
-dkms.conf
+# Codeblocks
+
+# Misc
+notes.txt
+*~
+*.log
+*.status
+aclocal.m4
+*.cache
+configure
+scripts
+
+
