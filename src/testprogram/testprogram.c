@@ -1,43 +1,30 @@
+/* SPDX-License-Identifier: LGPL-3.0-or-later */
+
 /*
- * "Software pw3270, desenvolvido com base nos códigos fontes do WC3270  e X3270
- * (Paul Mattes Paul.Mattes@usa.net), de emulação de terminal 3270 para acesso a
- * aplicativos mainframe. Registro no INPI sob o nome G3270. Registro no INPI sob
- * o nome G3270.
+ * Copyright (C) 2008 Banco do Brasil S.A.
  *
- * Copyright (C) <2008> <Banco do Brasil S.A.>
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published
+ * by the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- * Este programa é software livre. Você pode redistribuí-lo e/ou modificá-lo sob
- * os termos da GPL v.2 - Licença Pública Geral  GNU,  conforme  publicado  pela
- * Free Software Foundation.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- * Este programa é distribuído na expectativa de  ser  útil,  mas  SEM  QUALQUER
- * GARANTIA; sem mesmo a garantia implícita de COMERCIALIZAÇÃO ou  de  ADEQUAÇÃO
- * A QUALQUER PROPÓSITO EM PARTICULAR. Consulte a Licença Pública Geral GNU para
- * obter mais detalhes.
- *
- * Você deve ter recebido uma cópia da Licença Pública Geral GNU junto com este
- * programa; se não, escreva para a Free Software Foundation, Inc., 51 Franklin
- * St, Fifth Floor, Boston, MA  02110-1301  USA
- *
- * Este programa está nomeado como testprogram.c e possui - linhas de código.
- *
- * Contatos:
- *
- * perry.werneck@gmail.com	(Alexandre Perry de Souza Werneck)
- * erico.mendonca@gmail.com	(Erico Mascarenhas Mendonça)
- *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-
  /**
-  * @brief Test program for pw3270 IPC plugin.
+  * @brief Test program for pw3270 LUA plugin.
   *
   */
 
  #include <config.h>
  #include <v3270.h>
  #include <v3270/trace.h>
- #include <ipc-glib.h>
  #include <string.h>
  #include <stdlib.h>
  #include <glib.h>
@@ -53,7 +40,7 @@
  const gchar * plugin_path 	= G_STRINGIFY(PLUGIN_PATH);
  #endif // _WIN32
  const gchar * session_name	= G_STRINGIFY(PRODUCT_NAME);
- const gchar * plugin_name	= "ipcserver." G_MODULE_SUFFIX;
+ const gchar * plugin_name	= "lua3270." G_MODULE_SUFFIX;
 
  /*---[ Implement ]----------------------------------------------------------------------------------*/
 
@@ -62,7 +49,7 @@
  	g_message("Closing module %p",module);
 
 	static void (*stop)(GtkWidget *window, GtkWidget *terminal) = NULL;
-	if(!g_module_symbol(module,"pw3270_plugin_stop",(gpointer) &stop))
+	if(!g_module_symbol(module,"pw3270_plugin_stop",(gpointer *) &stop))
 	{
 		g_message("Can't get stop method from plugin: %s",g_module_error());
 	}
@@ -80,12 +67,12 @@
  	if(!module)
 		return;
 
-	GtkWidget * terminal = g_object_get_data(G_OBJECT(button),"terminal");
+	GtkWidget * terminal = GTK_WIDGET(g_object_get_data(G_OBJECT(button),"terminal"));
 
 	const gchar * method_name = (gtk_toggle_button_get_active(button) ? "pw3270_plugin_start" : "pw3270_plugin_stop");
 
 	static void (*call)(GtkWidget *window, GtkWidget *terminal) = NULL;
-	if(!g_module_symbol(module,method_name,(gpointer) &call))
+	if(!g_module_symbol(module,method_name,(gpointer *) &call))
 	{
 		g_message("Can't get method \"%s\": %s",method_name,g_module_error());
 		return;
@@ -146,6 +133,7 @@
 	gtk_notebook_append_page(GTK_NOTEBOOK(notebook),terminal,gtk_label_new(v3270_get_session_name(terminal)));
 
 	// Load plugin
+	/*
 	{
 		g_autofree gchar * plugin = g_build_filename(plugin_path,plugin_name,NULL);
 
@@ -164,6 +152,8 @@
 		}
 
 	}
+	*/
+
 	// Create trace window
 	{
 		GtkWidget	* trace 	= v3270_trace_new(terminal);
@@ -182,29 +172,6 @@
 
 		gtk_notebook_append_page(GTK_NOTEBOOK(notebook),trace,gtk_label_new("Trace"));
 
-		/*
-		GtkWidget	* box		= gtk_box_new(GTK_ORIENTATION_VERTICAL,0);
-		GtkWidget	* trace 	= v3270_trace_new(terminal);
-		GtkToolItem	* start		= gtk_toggle_tool_button_new();
-
-		gtk_widget_set_sensitive(GTK_WIDGET(start),module != NULL);
-
-		g_object_set_data(G_OBJECT(start),"terminal",terminal);
-
-		gtk_tool_button_set_label(GTK_TOOL_BUTTON(start),"Enable");
-		g_signal_connect(GTK_WIDGET(start), "toggled", G_CALLBACK(toggle_started_trace), module);
-		gtk_widget_set_tooltip_text(GTK_WIDGET(start),"Start/Stop plugin module");
-
-		v3270_trace_button_box_insert(trace,start);
-
-		gtk_toolbar_insert(GTK_TOOLBAR(toolbar), start, -1);
-
-		gtk_toolbar_insert(GTK_TOOLBAR(toolbar),gtk_separator_tool_item_new(),-1);
-
-		gtk_box_pack_start(GTK_BOX(box),toolbar,FALSE,FALSE,0);
-		gtk_box_pack_start(GTK_BOX(box),trace,TRUE,TRUE,0);
-		gtk_notebook_append_page(GTK_NOTEBOOK(notebook),box,gtk_label_new("Trace"));
-		*/
 	}
 
 	// Setup and show main window
@@ -237,28 +204,6 @@
 }
 
 int main (int argc, char **argv) {
-
-	/*
-	GVariantBuilder builder;
-
-	g_variant_builder_init(&builder,G_VARIANT_TYPE("(isi)"));
-
-	g_variant_builder_add(&builder, "i", 10);
-	g_variant_builder_add(&builder, "s", "teste");
-	g_variant_builder_add(&builder, "i", 20);
-
-	GVariant *value = g_variant_builder_end(&builder);
-
-	size_t szPacket = 0;
-	g_autofree unsigned char * buffer = ipc3270_pack("teste", value, &szPacket);
-	g_variant_unref(value);
-
-	debug("Package \"%s\" was created with %u bytes", buffer, (unsigned int) szPacket);
-
-	value = ipc3270_unpack(buffer);
-
-	g_variant_unref(value);
-	*/
 
 	GtkApplication *app;
 	int status;

@@ -40,6 +40,9 @@ AM_INIT_AUTOMAKE
 dnl Check for iconv
 AM_ICONV
 
+dnl Set gettext version
+AM_GNU_GETTEXT_VERSION([0.14])
+
 dnl Checks for programs.
 AC_PROG_CC
 AC_PROG_CXX
@@ -113,8 +116,8 @@ AC_SUBST(PACKAGE_DESCRIPTION,"PW3270 LUA Module")
 app_vrs_major=$(echo $VERSION | cut -d. -f1)
 app_vrs_minor=$(echo $VERSION | cut -d. -f2)
 
-AC_DEFINE_UNQUOTED(PACKAGE_MAJOR_VERSION, $app_vrs_major)
-AC_DEFINE_UNQUOTED(PACKAGE_MINOR_VERSION, $app_vrs_minor)
+AC_DEFINE_UNQUOTED(PACKAGE_MAJOR_VERSION, $app_vrs_major,[Major version])
+AC_DEFINE_UNQUOTED(PACKAGE_MINOR_VERSION, $app_vrs_minor,[Minor version])
 
 AC_SUBST(PACKAGE_MAJOR_VERSION,$app_vrs_major)
 AC_SUBST(PACKAGE_MINOR_VERSION,$app_vrs_minor)
@@ -124,9 +127,9 @@ AC_ARG_WITH([release], [AS_HELP_STRING([--with-release], [Set release])], [ app_
 app_rls_major=$(echo $app_cv_release.0.0 | cut -d. -f1)
 app_rls_minor=$(echo $app_cv_release.0.0 | cut -d. -f2)
 
-AC_DEFINE_UNQUOTED(PACKAGE_RELEASE, $app_cv_release)
-AC_DEFINE_UNQUOTED(PACKAGE_MAJOR_RELEASE, $app_rls_major)
-AC_DEFINE_UNQUOTED(PACKAGE_MINOR_RELEASE, $app_rls_minor)
+AC_DEFINE_UNQUOTED(PACKAGE_RELEASE, $app_cv_release,[Release number])
+AC_DEFINE_UNQUOTED(PACKAGE_MAJOR_RELEASE, $app_rls_major,[Major Release])
+AC_DEFINE_UNQUOTED(PACKAGE_MINOR_RELEASE, $app_rls_minor,[Minor Release])
 
 AC_SUBST(PACKAGE_RELEASE,$app_cv_release)
 AC_SUBST(PACKAGE_MAJOR_RELEASE,$app_rls_major)
@@ -151,7 +154,7 @@ dnl ---------------------------------------------------------------------------
 
 AC_CHECK_HEADER(libintl.h, [
 
-	AC_DEFINE(HAVE_LIBINTL, 1)
+	AC_DEFINE(HAVE_LIBINTL, 1,[Have libintl])
 
 	case "$host" in
 	*-mingw32|*-pc-msys)
@@ -171,20 +174,20 @@ dnl ---------------------------------------------------------------------------
 dnl Check for LIB3270
 dnl ---------------------------------------------------------------------------
 
-PKG_CHECK_MODULES( [LIB3270], [lib3270], AC_DEFINE(HAVE_LIB3270), AC_MSG_ERROR([LIB3270 is not present.]))
+PKG_CHECK_MODULES( [LIB3270], [lib3270], AC_DEFINE(HAVE_LIB3270,[],[Do we have LIB3270,?]), AC_MSG_ERROR([LIB3270 is not present.]))
 
 AC_SUBST(LIB3270_LIBS)
 AC_SUBST(LIB3270_CFLAGS)
 
 AC_ARG_WITH([product-name], [AS_HELP_STRING([--with-product-name], [Set product name])], [ app_cv_product="$withval" ],[ app_cv_product=`pkg-config --variable=product_name lib3270` ])
-AC_DEFINE_UNQUOTED(PRODUCT_NAME, $app_cv_product)
+AC_DEFINE_UNQUOTED(PRODUCT_NAME, $app_cv_product,[The product name])
 AC_SUBST(PRODUCT_NAME,$app_cv_product)
 
 dnl ---------------------------------------------------------------------------
 dnl Check for LIBV3270
 dnl ---------------------------------------------------------------------------
 
-PKG_CHECK_MODULES( [V3270], [libv3270], AC_DEFINE(HAVE_LIBV3270), AC_MSG_NOTICE([V3270 not present.]))
+PKG_CHECK_MODULES( [V3270], [libv3270], AC_DEFINE(HAVE_LIBV3270,[],[Do we have LIBV3270?]), AC_MSG_NOTICE([V3270 not present.]))
 
 AC_SUBST(V3270_LIBS)
 AC_SUBST(V3270_CFLAGS)
@@ -193,7 +196,7 @@ dnl ---------------------------------------------------------------------------
 dnl Check for GTK
 dnl ---------------------------------------------------------------------------
 
-PKG_CHECK_MODULES( [GTK], [gtk+-3.0], AC_DEFINE(HAVE_GTK), AC_MSG_ERROR([GTK not present.]))
+PKG_CHECK_MODULES( [GTK], [gtk+-3.0], AC_DEFINE(HAVE_GTK,[],[Do we have GTK?]), AC_MSG_ERROR([GTK not present.]))
 
 AC_SUBST(GTK_LIBS)
 AC_SUBST(GTK_CFLAGS)
@@ -202,7 +205,7 @@ dnl ---------------------------------------------------------------------------
 dnl Check for GLIB
 dnl ---------------------------------------------------------------------------
 
-PKG_CHECK_MODULES( [GLIB], [glib-2.0 gobject-2.0 gmodule-2.0 gio-2.0], AC_DEFINE(HAVE_GLIB), AC_MSG_ERROR([GLIB not present.] ))
+PKG_CHECK_MODULES( [GLIB], [glib-2.0 gobject-2.0 gmodule-2.0 gio-2.0], AC_DEFINE(HAVE_GLIB,[],[Do we have GLIB?]), AC_MSG_ERROR([GLIB not present.] ))
 AC_SUBST(GLIB_LIBS)
 AC_SUBST(GLIB_CFLAGS)
 
@@ -212,14 +215,14 @@ dnl ---------------------------------------------------------------------------
 
 app_cv_gettext_package="lua3270-$app_vrs_major.$app_vrs_minor"
 
-AC_DEFINE_UNQUOTED(GETTEXT_PACKAGE,"$app_cv_gettext_package")
+AC_DEFINE_UNQUOTED(GETTEXT_PACKAGE,"$app_cv_gettext_package",[Gettext package])
 AC_SUBST(GETTEXT_PACKAGE,"$app_cv_gettext_package")
 
 dnl ---------------------------------------------------------------------------
 dnl Configure which files to generate.
 dnl ---------------------------------------------------------------------------
 
-dnl AC_CONFIG_FILES(Makefile)
+AC_CONFIG_FILES(Makefile)
 
 dnl ---------------------------------------------------------------------------
 dnl Output the generated config.status script.
